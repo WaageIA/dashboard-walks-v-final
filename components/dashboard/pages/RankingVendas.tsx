@@ -123,9 +123,9 @@ export default function RankingVendas({ isTvMode }: RankingVendasProps) {
 
   const getPodiumColors = (position: number) => {
     switch (position) {
-      case 1: return { bg: "bg-gradient-to-br from-yellow-400/20 to-yellow-600/20", border: "border-yellow-400/40", text: "text-yellow-400", glow: "shadow-yellow-400/20" }
-      case 2: return { bg: "bg-gradient-to-br from-gray-300/20 to-gray-500/20", border: "border-gray-300/40", text: "text-gray-300", glow: "shadow-gray-300/20" }
-      case 3: return { bg: "bg-gradient-to-br from-amber-600/20 to-amber-800/20", border: "border-amber-600/40", text: "text-amber-600", glow: "shadow-amber-600/20" }
+      case 1: return { bg: "bg-gradient-to-br from-yellow-400/60 to-yellow-600/80", border: "border-yellow-400/40", text: "text-yellow-400", glow: "shadow-yellow-400/20" }
+      case 2: return { bg: "bg-gradient-to-br from-gray-300/60 to-gray-500/80", border: "border-gray-300/40", text: "text-gray-300", glow: "shadow-gray-300/20" }
+      case 3: return { bg: "bg-gradient-to-br from-amber-600/60 to-amber-800/80", border: "border-amber-600/40", text: "text-amber-600", glow: "shadow-amber-600/20" }
       default: return { bg: "bg-gray-800/50", border: "border-gray-700", text: "text-gray-400", glow: "shadow-none" }
     }
   }
