@@ -1,0 +1,488 @@
+{
+  "title": "Guia de Integração - Webhook Ranking de Vendas por Período",
+  "version": "1.0.0",
+  "description": "Documentação completa para integração do webhook de ranking de vendas por período (hoje, semana, mês) com o dashboard",
+  "endpoint": {
+    "url": "https://waagewalks.app.n8n.cloud/webhook/ranking-vendas-periodo",
+    "method": "GET",
+    "content_type": "application/json",
+    "authentication": "Bearer Token (opcional)"
+  },
+  "overview": {
+    "purpose": "Este webhook fornece dados detalhados de performance de vendedores por diferentes períodos (diário, semanal, mensal) para o dashboard de ranking por período",
+    "update_frequency": "Recomendado: A cada 10-15 minutos durante horário comercial",
+    "data_granularity": "Dados em tempo real com breakdown por período",
+    "features": [
+      "Performance diária, semanal e mensal",
+      "Tendências de crescimento",
+      "Métricas comparativas",
+      "Projeções e metas adaptativas",
+      "Análise de produtividade por período",
+      "Comparativos históricos"
+    ]
+  },
+  "payload_structure": {
+    "vendedores": {
+      "type": "array",
+      "description": "Lista de vendedores com performance detalhada por período",
+      "required": true,
+      "fields": {
+        "id": {
+          "type": "string",
+          "description": "Identificador único do vendedor",
+          "required": true,
+          "example": "vend_001"
+        },
+        "nome": {
+          "type": "string",
+          "description": "Nome completo do vendedor",
+          "required": true,
+          "example": "João Silva"
+        },
+        "foto": {
+          "type": "string",
+          "description": "URL da foto do vendedor (opcional)",
+          "required": false,
+          "example": "https://exemplo.com/fotos/joao.jpg"
+        },
+        "vendas_mes": {
+          "type": "number",
+          "description": "Total de vendas do mês atual",
+          "required": true,
+          "example": 45000
+        },
+        "meta_mes": {
+          "type": "number",
+          "description": "Meta de vendas do mês",
+          "required": true,
+          "example": 40000
+        },
+        "percentual_mes": {
+          "type": "number",
+          "description": "Percentual de atingimento da meta mensal",
+          "required": true,
+          "example": 113
+        },
+        "status": {
+          "type": "string",
+          "description": "Status do vendedor em relação à meta",
+          "required": true,
+          "enum": ["Superou", "Próximo", "Abaixo"],
+          "example": "Superou"
+        },
+        "posicao": {
+          "type": "number",
+          "description": "Posição no ranking geral",
+          "required": true,
+          "example": 1
+        },
+        "performance_periodo": {
+          "type": "object",
+          "description": "Performance detalhada por período",
+          "required": true,
+          "fields": {
+            "hoje": {
+              "type": "object",
+              "description": "Performance do dia atual",
+              "fields": {
+                "vendas": {
+                  "type": "number",
+                  "description": "Vendas do dia",
+                  "example": 2132
+                },
+                "meta_diaria": {
+                  "type": "number",
+                  "description": "Meta diária",
+                  "example": 1600
+                },
+                "atividades": {
+                  "type": "number",
+                  "description": "Número de atividades realizadas hoje",
+                  "example": 8
+                }
+              }
+            },
+            "semana": {
+              "type": "object",
+              "description": "Performance da semana atual",
+              "fields": {
+                "vendas": {
+                  "type": "number",
+                  "description": "Vendas da semana",
+                  "example": 9652
+                },
+                "meta_semanal": {
+                  "type": "number",
+                  "description": "Meta semanal",
+                  "example": 8000
+                },
+                "dias_trabalhados": {
+                  "type": "number",
+                  "description": "Dias trabalhados na semana",
+                  "example": 5
+                }
+              }
+            },
+            "mes": {
+              "type": "object",
+              "description": "Performance do mês atual",
+              "fields": {
+                "vendas": {
+                  "type": "number",
+                  "description": "Vendas do mês",
+                  "example": 45000
+                },
+                "meta_mensal": {
+                  "type": "number",
+                  "description": "Meta mensal",
+                  "example": 40000
+                },
+                "dias_trabalhados": {
+                  "type": "number",
+                  "description": "Dias trabalhados no mês",
+                  "example": 20
+                },
+                "dias_restantes": {
+                  "type": "number",
+                  "description": "Dias úteis restantes no mês",
+                  "example": 5
+                }
+              }
+            }
+          }
+        },
+        "tendencias": {
+          "type": "object",
+          "description": "Tendências de crescimento por período",
+          "required": true,
+          "fields": {
+            "vendas_diarias": {
+              "type": "number",
+              "description": "Percentual de crescimento nas vendas diárias",
+              "example": 8
+            },
+            "vendas_semanais": {
+              "type": "number",
+              "description": "Percentual de crescimento nas vendas semanais",
+              "example": 12
+            },
+            "vendas_mensais": {
+              "type": "number",
+              "description": "Percentual de crescimento nas vendas mensais",
+              "example": 15
+            }
+          }
+        }
+      }
+    },
+    "metricas_periodo": {
+      "type": "object",
+      "description": "Métricas consolidadas de todos os períodos",
+      "required": true,
+      "fields": {
+        "total_vendas_hoje": {
+          "type": "number",
+          "description": "Total de vendas de toda equipe hoje",
+          "example": 16442
+        },
+        "total_vendas_semana": {
+          "type": "number",
+          "description": "Total de vendas de toda equipe na semana",
+          "example": 81415
+        },
+        "total_vendas_mes": {
+          "type": "number",
+          "description": "Total de vendas de toda equipe no mês",
+          "example": 328000
+        },
+        "meta_total_mes": {
+          "type": "number",
+          "description": "Meta total da equipe para o mês",
+          "example": 400000
+        },
+        "dias_uteis_mes": {
+          "type": "number",
+          "description": "Total de dias úteis no mês",
+          "example": 25
+        },
+        "dias_trabalhados": {
+          "type": "number",
+          "description": "Dias já trabalhados no mês",
+          "example": 20
+        },
+        "dias_restantes": {
+          "type": "number",
+          "description": "Dias úteis restantes no mês",
+          "example": 5
+        },
+        "media_diaria_necessaria": {
+          "type": "number",
+          "description": "Média diária necessária para atingir a meta",
+          "example": 14400
+        }
+      }
+    },
+    "comparativo_periodo": {
+      "type": "object",
+      "description": "Comparativos com períodos anteriores",
+      "required": true,
+      "fields": {
+        "mes_anterior": {
+          "type": "object",
+          "description": "Comparativo com o mês anterior",
+          "fields": {
+            "vendas": {
+              "type": "number",
+              "description": "Vendas do mês anterior",
+              "example": 295000
+            },
+            "percentual_crescimento": {
+              "type": "number",
+              "description": "Percentual de crescimento em relação ao mês anterior",
+              "example": 11.2
+            }
+          }
+        },
+        "mesmo_periodo_ano_anterior": {
+          "type": "object",
+          "description": "Comparativo com o mesmo período do ano anterior",
+          "fields": {
+            "vendas": {
+              "type": "number",
+              "description": "Vendas do mesmo período do ano anterior",
+              "example": 280000
+            },
+            "percentual_crescimento": {
+              "type": "number",
+              "description": "Percentual de crescimento em relação ao ano anterior",
+              "example": 17.1
+            }
+          }
+        }
+      }
+    }
+  },
+  "example_payload": {
+    "vendedores": [
+      {
+        "id": "vend_001",
+        "nome": "João Silva",
+        "foto": "https://exemplo.com/fotos/joao.jpg",
+        "vendas_mes": 45000,
+        "meta_mes": 40000,
+        "percentual_mes": 113,
+        "status": "Superou",
+        "posicao": 1,
+        "performance_periodo": {
+          "hoje": {
+            "vendas": 2132,
+            "meta_diaria": 1600,
+            "atividades": 8
+          },
+          "semana": {
+            "vendas": 9652,
+            "meta_semanal": 8000,
+            "dias_trabalhados": 5
+          },
+          "mes": {
+            "vendas": 45000,
+            "meta_mensal": 40000,
+            "dias_trabalhados": 20,
+            "dias_restantes": 5
+          }
+        },
+        "tendencias": {
+          "vendas_diarias": 8,
+          "vendas_semanais": 12,
+          "vendas_mensais": 15
+        }
+      },
+      {
+        "id": "vend_002",
+        "nome": "Pedro Costa",
+        "foto": "https://exemplo.com/fotos/pedro.jpg",
+        "vendas_mes": 42000,
+        "meta_mes": 40000,
+        "percentual_mes": 105,
+        "status": "Superou",
+        "posicao": 2,
+        "performance_periodo": {
+          "hoje": {
+            "vendas": 1924,
+            "meta_diaria": 1600,
+            "atividades": 7
+          },
+          "semana": {
+            "vendas": 8932,
+            "meta_semanal": 8000,
+            "dias_trabalhados": 5
+          },
+          "mes": {
+            "vendas": 42000,
+            "meta_mensal": 40000,
+            "dias_trabalhados": 20,
+            "dias_restantes": 5
+          }
+        },
+        "tendencias": {
+          "vendas_diarias": 5,
+          "vendas_semanais": 8,
+          "vendas_mensais": 10
+        }
+      }
+    ],
+    "metricas_periodo": {
+      "total_vendas_hoje": 16442,
+      "total_vendas_semana": 81415,
+      "total_vendas_mes": 328000,
+      "meta_total_mes": 400000,
+      "dias_uteis_mes": 25,
+      "dias_trabalhados": 20,
+      "dias_restantes": 5,
+      "media_diaria_necessaria": 14400
+    },
+    "comparativo_periodo": {
+      "mes_anterior": {
+        "vendas": 295000,
+        "percentual_crescimento": 11.2
+      },
+      "mesmo_periodo_ano_anterior": {
+        "vendas": 280000,
+        "percentual_crescimento": 17.1
+      }
+    }
+  },
+  "implementation_guide": {
+    "step1": {
+      "title": "Configuração do Endpoint",
+      "description": "Configure seu sistema para responder no endpoint especificado",
+      "code_example": "GET https://waagewalks.app.n8n.cloud/webhook/ranking-vendas-periodo",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer YOUR_TOKEN (opcional)"
+      }
+    },
+    "step2": {
+      "title": "Coleta de Dados por Período",
+      "description": "Colete dados granulares por período",
+      "required_queries": [
+        "Vendas do dia atual (desde 00:00)",
+        "Vendas da semana atual (segunda a hoje)",
+        "Vendas do mês atual (dia 1 até hoje)",
+        "Metas diárias, semanais e mensais",
+        "Atividades realizadas por período",
+        "Dados históricos para comparação"
+      ]
+    },
+    "step3": {
+      "title": "Cálculos de Tendências",
+      "description": "Calcule as tendências de crescimento",
+      "formulas": {
+        "tendencia_diaria": "((vendas_hoje - vendas_dia_anterior) / vendas_dia_anterior) * 100",
+        "tendencia_semanal": "((vendas_semana_atual - vendas_semana_anterior) / vendas_semana_anterior) * 100",
+        "tendencia_mensal": "((vendas_mes_atual - vendas_mes_anterior) / vendas_mes_anterior) * 100"
+      }
+    },
+    "step4": {
+      "title": "Métricas Consolidadas",
+      "description": "Calcule métricas consolidadas da equipe",
+      "calculations": [
+        "Soma todas as vendas por período",
+        "Calcule dias úteis restantes no mês",
+        "Determine média diária necessária: (meta_total - vendas_atuais) / dias_restantes",
+        "Compare com períodos anteriores"
+      ]
+    }
+  },
+  "business_rules": {
+    "period_definitions": {
+      "hoje": "Desde 00:00 do dia atual até o momento da consulta",
+      "semana": "Segunda-feira da semana atual até o momento da consulta",
+      "mes": "Dia 1 do mês atual até o momento da consulta"
+    },
+    "working_days": {
+      "description": "Considerar apenas dias úteis para cálculos",
+      "rules": [
+        "Excluir sábados e domingos",
+        "Excluir feriados nacionais e locais",
+        "Considerar horário comercial da empresa"
+      ]
+    },
+    "trend_calculation": {
+      "description": "Como calcular tendências",
+      "rules": [
+        "Usar períodos equivalentes para comparação",
+        "Considerar sazonalidade se aplicável",
+        "Valores negativos indicam queda, positivos indicam crescimento"
+      ]
+    }
+  },
+  "data_quality": {
+    "validation_rules": [
+      "Vendas não podem ser negativas",
+      "Metas devem ser maiores que zero",
+      "Percentuais devem ser calculados corretamente",
+      "Dias trabalhados não podem exceder dias úteis",
+      "Tendências devem estar em formato numérico"
+    ],
+    "data_consistency": [
+      "Soma das vendas individuais deve bater com total da equipe",
+      "Dias trabalhados deve ser consistente entre vendedores",
+      "Metas individuais devem somar a meta da equipe",
+      "Dados históricos devem ser consistentes"
+    ]
+  },
+  "performance_optimization": {
+    "database_tips": [
+      "Use índices em campos de data para consultas rápidas",
+      "Considere views materializadas para cálculos complexos",
+      "Cache resultados de tendências que não mudam frequentemente",
+      "Use particionamento por data se o volume for alto"
+    ],
+    "api_optimization": [
+      "Implemente cache com TTL de 10-15 minutos",
+      "Use compressão gzip para reduzir payload",
+      "Considere paginação se houver muitos vendedores",
+      "Otimize consultas para evitar N+1 queries"
+    ]
+  },
+  "troubleshooting": {
+    "common_issues": [
+      {
+        "issue": "Tendências aparecem como zero ou null",
+        "cause": "Dados históricos insuficientes para comparação",
+        "solution": "Certifique-se de ter dados dos períodos anteriores. Use zero se não houver dados históricos"
+      },
+      {
+        "issue": "Métricas do período não batem",
+        "cause": "Inconsistência entre dados individuais e consolidados",
+        "solution": "Valide que a soma das vendas individuais equals total da equipe"
+      },
+      {
+        "issue": "Performance lenta do endpoint",
+        "cause": "Consultas complexas sem otimização",
+        "solution": "Implemente cache, otimize queries e considere pre-cálculos"
+      },
+      {
+        "issue": "Dados não atualizam em tempo real",
+        "cause": "Cache muito longo ou problemas de sincronização",
+        "solution": "Reduza TTL do cache e verifique jobs de sincronização"
+      }
+    ]
+  },
+  "monitoring": {
+    "key_metrics": [
+      "Tempo de resposta do endpoint (<2s)",
+      "Precisão dos cálculos de tendência",
+      "Consistência entre dados individuais e consolidados",
+      "Frequência de atualizações",
+      "Taxa de erro nas validações"
+    ],
+    "alerts": [
+      "Endpoint não responde em mais de 3 segundos",
+      "Inconsistências nos dados detectadas",
+      "Tendências com valores extremos (>100% ou <-50%)",
+      "Dados não atualizados há mais de 30 minutos"
+    ]
+  }
+}

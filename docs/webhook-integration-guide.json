@@ -1,0 +1,107 @@
+{
+  "webhook_integration_guide": {
+    "base_url": "https://webhook.escalasdigitaischatboot.uk/webhook",
+    "endpoints": {
+      "vendas": {
+        "url": "/vendas",
+        "method": "GET",
+        "description": "Dados de vendas e equipe comercial",
+        "expected_response": {
+          "vendas_mes": "number - Vendas totais do mês atual",
+          "meta_vendas": "number - Meta de vendas do mês",
+          "vendas_diarias": [
+            {
+              "data": "string - Data no formato DD/MM",
+              "vendas": "number - Vendas do dia",
+              "meta": "number - Meta do dia"
+            }
+          ],
+          "equipe_comercial": [
+            {
+              "nome": "string - Nome do vendedor",
+              "vendas": "number - Vendas do vendedor",
+              "meta": "number - Meta do vendedor",
+              "atividades": {
+                "ligacoes": "number - Número de ligações",
+                "reunioes": "number - Número de reuniões",
+                "propostas": "number - Número de propostas"
+              }
+            }
+          ]
+        }
+      },
+      "marketing": {
+        "url": "/marketing",
+        "method": "GET",
+        "description": "Dados de marketing digital e campanhas",
+        "expected_response": {
+          "leads_gerados": "number - Total de leads do mês",
+          "meta_leads": "number - Meta de leads",
+          "custo_por_lead": "number - Custo médio por lead",
+          "taxa_conversao": "number - Taxa de conversão em %",
+          "canais": [
+            {
+              "nome": "string - Nome do canal (Google Ads, Instagram, etc)",
+              "leads": "number - Leads gerados pelo canal",
+              "investimento": "number - Valor investido no canal"
+            }
+          ],
+          "campanhas": [
+            {
+              "nome": "string - Nome da campanha",
+              "investimento": "number - Valor investido",
+              "conversoes": "number - Número de conversões",
+              "roi": "number - ROI em %",
+              "status": "string - ativa, pausada ou finalizada"
+            }
+          ]
+        }
+      },
+      "redes-sociais": {
+        "url": "/redes-sociais",
+        "method": "GET",
+        "description": "Dados das redes sociais",
+        "expected_response": {
+          "plataformas": [
+            {
+              "nome": "string - Nome da plataforma (Instagram, Facebook, etc)",
+              "seguidores": "number - Número de seguidores",
+              "engajamento": "number - Número de engajamentos",
+              "alcance": "number - Alcance total",
+              "crescimento_mensal": "number - Crescimento em % no mês"
+            }
+          ]
+        }
+      },
+      "funil": {
+        "url": "/funil",
+        "method": "GET",
+        "description": "Dados do funil de vendas",
+        "expected_response": {
+          "etapas": [
+            {
+              "nome": "string - Nome da etapa (Leads, Qualificados, etc)",
+              "quantidade": "number - Quantidade nesta etapa",
+              "taxa_conversao": "number - Taxa de conversão para próxima etapa (opcional)"
+            }
+          ]
+        }
+      }
+    },
+    "authentication": {
+      "type": "Bearer Token (opcional)",
+      "header": "Authorization: Bearer YOUR_TOKEN",
+      "note": "Adicione autenticação se necessário no arquivo webhookIntegration.ts"
+    },
+    "error_handling": {
+      "fallback": "Em caso de erro, o dashboard usa dados simulados",
+      "retry": "Tentativas automáticas a cada 5 minutos",
+      "status_monitoring": "Monitoramento em tempo real da conectividade"
+    },
+    "testing": {
+      "connectivity_test": "Função testWebhookConnectivity() verifica se endpoints estão acessíveis",
+      "manual_refresh": "Botão de refresh manual no header",
+      "auto_refresh": "Atualização automática a cada 5 minutos"
+    }
+  }
+}

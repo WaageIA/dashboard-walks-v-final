@@ -1,0 +1,194 @@
+{
+  "webhook_suporte_integration": {
+    "title": "Integração Webhook - Dashboard de Suporte",
+    "description": "Guia completo para integração do webhook de dados de suporte",
+    "version": "1.0.0",
+    "base_url": "https://waagewalks.app.n8n.cloud/webhook",
+    "endpoints": {
+      "suporte": {
+        "url": "/suporte",
+        "method": "GET",
+        "description": "Retorna dados em tempo real do dashboard de suporte",
+        "response_format": {
+          "lastUpdate": "string (ISO 8601)",
+          "generalMetrics": {
+            "statusGeral": "string ('NORMAL' | 'ATENÇÃO' | 'CRÍTICO')",
+            "ticketsAbertos": "number",
+            "resolvidosHoje": "number",
+            "atendentesAtivos": {
+              "ativos": "number",
+              "total": "number"
+            }
+          },
+          "performanceMetrics": {
+            "tempoMedioResposta": "string (ex: '1h30min')",
+            "tempoMedioRespostaMeta": "string (ex: '< 2h')",
+            "tempoMedioRespostaAtingiu": "boolean",
+            "taxaFCR": "number (0-100)",
+            "taxaFCRMeta": "number (0-100)",
+            "taxaFCRAtingiu": "boolean",
+            "csatScore": "number (0-5, decimal)",
+            "csatScoreMeta": "number (0-5, decimal)",
+            "csatScoreAtingiu": "boolean",
+            "slaCompliance": "number (0-100)",
+            "slaComplianceMeta": "number (0-100)",
+            "slaComplianceAtingiu": "boolean"
+          },
+          "agents": [
+            {
+              "id": "string",
+              "name": "string",
+              "photo": "string (opcional, URL da foto)",
+              "position": "number (ranking)",
+              "status": "string ('Online' | 'Ocupado' | 'Sobrecarregado' | 'Pausa')",
+              "stats": {
+                "emAtendimento": "number",
+                "resolvidos": "number",
+                "tmr": "string (ex: '45min')"
+              }
+            }
+          ],
+          "queue": [
+            {
+              "id": "string",
+              "cliente": "string",
+              "empresa": "string",
+              "produto": "string",
+              "icon": "string ('credit-card' | 'smartphone' | 'monitor' | 'store' | 'truck')",
+              "aguardando": "string (ex: '5min')",
+              "prioridade": "string ('Alta' | 'Média' | 'Baixa')"
+            }
+          ]
+        },
+        "example_response": {
+          "lastUpdate": "2024-01-15T10:30:00.000Z",
+          "generalMetrics": {
+            "statusGeral": "NORMAL",
+            "ticketsAbertos": 42,
+            "resolvidosHoje": 128,
+            "atendentesAtivos": {
+              "ativos": 8,
+              "total": 10
+            }
+          },
+          "performanceMetrics": {
+            "tempoMedioResposta": "1h25min",
+            "tempoMedioRespostaMeta": "< 2h",
+            "tempoMedioRespostaAtingiu": true,
+            "taxaFCR": 78,
+            "taxaFCRMeta": 70,
+            "taxaFCRAtingiu": true,
+            "csatScore": 4.6,
+            "csatScoreMeta": 4.5,
+            "csatScoreAtingiu": true,
+            "slaCompliance": 94,
+            "slaComplianceMeta": 90,
+            "slaComplianceAtingiu": true
+          },
+          "agents": [
+            {
+              "id": "agent-1",
+              "name": "Ana Silva",
+              "photo": "https://example.com/photo1.jpg",
+              "position": 1,
+              "status": "Online",
+              "stats": {
+                "emAtendimento": 3,
+                "resolvidos": 15,
+                "tmr": "42min"
+              }
+            },
+            {
+              "id": "agent-2",
+              "name": "Carlos Santos",
+              "position": 2,
+              "status": "Ocupado",
+              "stats": {
+                "emAtendimento": 5,
+                "resolvidos": 12,
+                "tmr": "38min"
+              }
+            }
+          ],
+          "queue": [
+            {
+              "id": "queue-1",
+              "cliente": "João",
+              "empresa": "Padaria do João",
+              "produto": "PDV",
+              "icon": "credit-card",
+              "aguardando": "8min",
+              "prioridade": "Alta"
+            },
+            {
+              "id": "queue-2",
+              "cliente": "Maria",
+              "empresa": "Boutique Maria",
+              "produto": "Banco Digital",
+              "icon": "smartphone",
+              "aguardando": "3min",
+              "prioridade": "Média"
+            }
+          ]
+        }
+      }
+    },
+    "integration_steps": {
+      "step_1": {
+        "title": "Configurar Webhook no n8n",
+        "description": "Criar um workflow que responda no endpoint /suporte",
+        "details": [
+          "Criar novo workflow no n8n",
+          "Adicionar nó 'Webhook' com path '/suporte'",
+          "Configurar método GET",
+          "Conectar com fonte de dados do sistema de suporte"
+        ]
+      },
+      "step_2": {
+        "title": "Processar Dados de Suporte",
+        "description": "Transformar dados do sistema em formato esperado",
+        "details": [
+          "Buscar métricas gerais (tickets, status, atendentes)",
+          "Calcular métricas de performance (TMR, FCR, CSAT, SLA)",
+          "Listar agentes ativos com estatísticas",
+          "Obter fila de espera atual",
+          "Formatar resposta conforme interface"
+        ]
+      },
+      "step_3": {
+        "title": "Validar Integração",
+        "description": "Testar conectividade e formato dos dados",
+        "details": [
+          "Testar endpoint via Postman/curl",
+          "Verificar formato da resposta JSON",
+          "Validar tipos de dados",
+          "Confirmar atualização em tempo real no dashboard"
+        ]
+      }
+    },
+    "data_sources": {
+      "required_systems": [
+        "Sistema de Tickets/Helpdesk",
+        "Sistema de Gestão de Atendentes",
+        "Métricas de Performance",
+        "Fila de Atendimento em Tempo Real"
+      ],
+      "metrics_calculation": {
+        "tmr": "Tempo Médio de Resolução por agente",
+        "fcr": "First Call Resolution - % de tickets resolvidos no primeiro contato",
+        "csat": "Customer Satisfaction Score - Média das avaliações",
+        "sla": "Service Level Agreement - % de tickets dentro do prazo"
+      }
+    },
+    "error_handling": {
+      "fallback": "Em caso de erro, o dashboard usa dados fictícios",
+      "retry_logic": "Tentativas automáticas a cada 20 segundos",
+      "error_logging": "Erros são logados no console para debug"
+    },
+    "testing": {
+      "test_url": "https://waagewalks.app.n8n.cloud/webhook/suporte",
+      "expected_status": 200,
+      "content_type": "application/json"
+    }
+  }
+}

@@ -1,0 +1,396 @@
+{
+  "title": "Guia de Integração - Webhook Ranking de Vendas",
+  "version": "1.0.0",
+  "description": "Documentação completa para integração do webhook de ranking de vendas com o dashboard",
+  "endpoint": {
+    "url": "https://waagewalks.app.n8n.cloud/webhook/ranking-vendas",
+    "method": "GET",
+    "content_type": "application/json",
+    "authentication": "Bearer Token (opcional)"
+  },
+  "overview": {
+    "purpose": "Este webhook fornece dados de ranking de vendedores para exibição no dashboard de ranking de vendas",
+    "update_frequency": "Recomendado: A cada 15-30 minutos durante horário comercial",
+    "data_retention": "Dados históricos dos últimos 12 meses",
+    "features": [
+      "Ranking completo de vendedores",
+      "Métricas de performance individual",
+      "Histórico mensal de vendas",
+      "Atividades comerciais detalhadas",
+      "Status de atingimento de metas",
+      "Métricas gerais da equipe"
+    ]
+  },
+  "payload_structure": {
+    "vendedores": {
+      "type": "array",
+      "description": "Lista completa de vendedores com suas métricas",
+      "required": true,
+      "fields": {
+        "id": {
+          "type": "string",
+          "description": "Identificador único do vendedor",
+          "required": true,
+          "example": "vend_001"
+        },
+        "nome": {
+          "type": "string",
+          "description": "Nome completo do vendedor",
+          "required": true,
+          "example": "João Silva"
+        },
+        "foto": {
+          "type": "string",
+          "description": "URL da foto do vendedor (opcional)",
+          "required": false,
+          "example": "https://exemplo.com/fotos/joao.jpg"
+        },
+        "vendas": {
+          "type": "number",
+          "description": "Total de vendas no período (em reais)",
+          "required": true,
+          "example": 45000
+        },
+        "meta": {
+          "type": "number",
+          "description": "Meta de vendas do período (em reais)",
+          "required": true,
+          "example": 40000
+        },
+        "percentual": {
+          "type": "number",
+          "description": "Percentual de atingimento da meta",
+          "required": true,
+          "example": 113
+        },
+        "status": {
+          "type": "string",
+          "description": "Status do vendedor em relação à meta",
+          "required": true,
+          "enum": ["Superou", "Próximo", "Abaixo"],
+          "example": "Superou"
+        },
+        "posicao": {
+          "type": "number",
+          "description": "Posição no ranking (1 = primeiro lugar)",
+          "required": true,
+          "example": 1
+        },
+        "atividades": {
+          "type": "object",
+          "description": "Atividades comerciais realizadas",
+          "required": true,
+          "fields": {
+            "ligacoes": {
+              "type": "number",
+              "description": "Número de ligações realizadas",
+              "example": 150
+            },
+            "reunioes": {
+              "type": "number",
+              "description": "Número de reuniões realizadas",
+              "example": 25
+            },
+            "propostas": {
+              "type": "number",
+              "description": "Número de propostas enviadas",
+              "example": 12
+            },
+            "emails": {
+              "type": "number",
+              "description": "Número de emails enviados",
+              "example": 89
+            }
+          }
+        },
+        "historico_mensal": {
+          "type": "array",
+          "description": "Histórico de vendas dos últimos meses",
+          "required": false,
+          "fields": {
+            "mes": {
+              "type": "string",
+              "description": "Nome do mês",
+              "example": "Janeiro"
+            },
+            "vendas": {
+              "type": "number",
+              "description": "Vendas do mês",
+              "example": 42000
+            },
+            "meta": {
+              "type": "number",
+              "description": "Meta do mês",
+              "example": 40000
+            }
+          }
+        }
+      }
+    },
+    "metas_gerais": {
+      "type": "object",
+      "description": "Métricas gerais da equipe de vendas",
+      "required": true,
+      "fields": {
+        "meta_total_equipe": {
+          "type": "number",
+          "description": "Meta total da equipe",
+          "example": 400000
+        },
+        "vendas_total_equipe": {
+          "type": "number",
+          "description": "Total de vendas da equipe",
+          "example": 328000
+        },
+        "percentual_equipe": {
+          "type": "number",
+          "description": "Percentual de atingimento da equipe",
+          "example": 82
+        },
+        "vendedores_acima_meta": {
+          "type": "number",
+          "description": "Número de vendedores acima da meta",
+          "example": 2
+        },
+        "vendedores_proximo_meta": {
+          "type": "number",
+          "description": "Número de vendedores próximos da meta (80-99%)",
+          "example": 1
+        },
+        "vendedores_abaixo_meta": {
+          "type": "number",
+          "description": "Número de vendedores abaixo da meta (<80%)",
+          "example": 7
+        }
+      }
+    },
+    "periodo_competicao": {
+      "type": "object",
+      "description": "Informações sobre o período da competição",
+      "required": true,
+      "fields": {
+        "inicio": {
+          "type": "string",
+          "description": "Data de início do período (YYYY-MM-DD)",
+          "example": "2024-03-01"
+        },
+        "fim": {
+          "type": "string",
+          "description": "Data de fim do período (YYYY-MM-DD)",
+          "example": "2024-03-31"
+        },
+        "mes_referencia": {
+          "type": "string",
+          "description": "Mês de referência da competição",
+          "example": "Março 2024"
+        }
+      }
+    }
+  },
+  "example_payload": {
+    "vendedores": [
+      {
+        "id": "vend_001",
+        "nome": "João Silva",
+        "foto": "https://exemplo.com/fotos/joao.jpg",
+        "vendas": 45000,
+        "meta": 40000,
+        "percentual": 113,
+        "status": "Superou",
+        "posicao": 1,
+        "atividades": {
+          "ligacoes": 150,
+          "reunioes": 25,
+          "propostas": 12,
+          "emails": 89
+        },
+        "historico_mensal": [
+          {
+            "mes": "Janeiro",
+            "vendas": 42000,
+            "meta": 40000
+          },
+          {
+            "mes": "Fevereiro",
+            "vendas": 38000,
+            "meta": 40000
+          },
+          {
+            "mes": "Março",
+            "vendas": 45000,
+            "meta": 40000
+          }
+        ]
+      },
+      {
+        "id": "vend_002",
+        "nome": "Pedro Costa",
+        "foto": "https://exemplo.com/fotos/pedro.jpg",
+        "vendas": 42000,
+        "meta": 40000,
+        "percentual": 105,
+        "status": "Superou",
+        "posicao": 2,
+        "atividades": {
+          "ligacoes": 140,
+          "reunioes": 22,
+          "propostas": 10,
+          "emails": 76
+        },
+        "historico_mensal": [
+          {
+            "mes": "Janeiro",
+            "vendas": 39000,
+            "meta": 40000
+          },
+          {
+            "mes": "Fevereiro",
+            "vendas": 41000,
+            "meta": 40000
+          },
+          {
+            "mes": "Março",
+            "vendas": 42000,
+            "meta": 40000
+          }
+        ]
+      }
+    ],
+    "metas_gerais": {
+      "meta_total_equipe": 400000,
+      "vendas_total_equipe": 328000,
+      "percentual_equipe": 82,
+      "vendedores_acima_meta": 2,
+      "vendedores_proximo_meta": 1,
+      "vendedores_abaixo_meta": 7
+    },
+    "periodo_competicao": {
+      "inicio": "2024-03-01",
+      "fim": "2024-03-31",
+      "mes_referencia": "Março 2024"
+    }
+  },
+  "implementation_guide": {
+    "step1": {
+      "title": "Configuração do Endpoint",
+      "description": "Configure seu sistema para responder no endpoint especificado",
+      "code_example": "GET https://waagewalks.app.n8n.cloud/webhook/ranking-vendas",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer YOUR_TOKEN (opcional)"
+      }
+    },
+    "step2": {
+      "title": "Preparação dos Dados",
+      "description": "Colete os dados de vendas do seu CRM/ERP",
+      "required_data": [
+        "Lista de vendedores ativos",
+        "Vendas realizadas no período",
+        "Metas individuais e da equipe",
+        "Atividades comerciais (ligações, reuniões, etc.)",
+        "Histórico mensal (opcional)"
+      ]
+    },
+    "step3": {
+      "title": "Formatação do Payload",
+      "description": "Formate os dados conforme a estrutura especificada",
+      "tips": [
+        "Ordene os vendedores por vendas (maior para menor)",
+        "Calcule o percentual de atingimento: (vendas/meta) * 100",
+        "Defina o status baseado no percentual: >=100% = Superou, 80-99% = Próximo, <80% = Abaixo",
+        "Inclua todas as atividades comerciais disponíveis"
+      ]
+    },
+    "step4": {
+      "title": "Teste e Validação",
+      "description": "Teste o endpoint antes de colocar em produção",
+      "validation_checklist": [
+        "Endpoint responde com status 200",
+        "Payload está no formato JSON correto",
+        "Todos os campos obrigatórios estão presentes",
+        "Dados estão atualizados e corretos",
+        "Performance do endpoint é adequada (<2s)"
+      ]
+    }
+  },
+  "business_rules": {
+    "ranking_calculation": {
+      "description": "Como o ranking é calculado",
+      "rules": [
+        "Ordenação primária: Total de vendas (maior para menor)",
+        "Ordenação secundária: Percentual de atingimento da meta",
+        "Ordenação terciária: Número de atividades realizadas"
+      ]
+    },
+    "status_definition": {
+      "description": "Definição dos status dos vendedores",
+      "rules": {
+        "Superou": "Percentual >= 100%",
+        "Próximo": "Percentual entre 80% e 99%",
+        "Abaixo": "Percentual < 80%"
+      }
+    },
+    "data_freshness": {
+      "description": "Atualização dos dados",
+      "rules": [
+        "Dados devem ser atualizados pelo menos a cada 30 minutos",
+        "Durante horário comercial, recomenda-se atualização a cada 15 minutos",
+        "Fora do horário comercial, pode ser atualizado a cada 2 horas"
+      ]
+    }
+  },
+  "troubleshooting": {
+    "common_issues": [
+      {
+        "issue": "Vendedores não aparecem no ranking",
+        "cause": "Campo 'posicao' não está sendo calculado corretamente",
+        "solution": "Certifique-se de ordenar os vendedores por vendas e atribuir posições sequenciais (1, 2, 3...)"
+      },
+      {
+        "issue": "Status incorreto dos vendedores",
+        "cause": "Cálculo do percentual está errado",
+        "solution": "Verifique a fórmula: (vendas / meta) * 100. Certifique-se que ambos os valores são números"
+      },
+      {
+        "issue": "Fotos não aparecem",
+        "cause": "URLs das fotos estão inválidas ou inacessíveis",
+        "solution": "Verifique se as URLs são públicas e acessíveis. Use placeholder se não houver foto"
+      },
+      {
+        "issue": "Dados não atualizam",
+        "cause": "Cache ou problema de conectividade",
+        "solution": "Verifique logs do servidor e teste o endpoint manualmente"
+      }
+    ],
+    "performance_tips": [
+      "Use cache para dados que não mudam frequentemente",
+      "Otimize consultas ao banco de dados",
+      "Implemente paginação se houver muitos vendedores",
+      "Use CDN para servir imagens dos vendedores"
+    ]
+  },
+  "security": {
+    "recommendations": [
+      "Use HTTPS para todas as comunicações",
+      "Implemente autenticação por token se necessário",
+      "Valide todos os dados de entrada",
+      "Não exponha informações sensíveis dos vendedores",
+      "Implemente rate limiting para evitar abuso"
+    ]
+  },
+  "monitoring": {
+    "metrics_to_track": [
+      "Tempo de resposta do endpoint",
+      "Taxa de sucesso das requisições",
+      "Frequência de atualizações",
+      "Número de vendedores retornados",
+      "Erros de validação de dados"
+    ],
+    "alerts": [
+      "Endpoint não responde em mais de 5 segundos",
+      "Taxa de erro acima de 5%",
+      "Dados não atualizados há mais de 1 hora",
+      "Número de vendedores muito baixo ou alto"
+    ]
+  }
+}

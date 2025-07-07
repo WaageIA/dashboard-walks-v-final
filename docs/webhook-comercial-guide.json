@@ -1,0 +1,225 @@
+{
+  "title": "Guia de Integração - Webhooks Comerciais",
+  "description": "Documentação completa dos webhooks necessários para as telas ComercialTela01 e ComercialTela02",
+  "version": "1.0.0",
+  "baseUrl": "https://webhook.escalasdigitaischatboot.uk/webhook",
+  "endpoints": {
+    "metricas_periodicas": {
+      "url": "/metricas-periodicas",
+      "method": "GET",
+      "description": "Métricas comerciais por período (semanal, mensal, anual) para ComercialTela01",
+      "response_format": {
+        "semanal": {
+          "vendas_totais": "number - Valor total de vendas da semana",
+          "meta_vendas": "number - Meta de vendas da semana",
+          "tendencia_vendas": "number - Percentual de tendência das vendas",
+          "leads_qualificados": "number - Quantidade de leads qualificados",
+          "meta_leads": "number - Meta de leads qualificados",
+          "tendencia_leads": "number - Percentual de tendência dos leads",
+          "taxa_conversao": "number - Taxa de conversão em percentual",
+          "meta_conversao": "number - Meta de conversão em percentual",
+          "tendencia_conversao": "number - Tendência da taxa de conversão",
+          "meta_periodo": {
+            "atual": "number - Progresso atual da meta do período",
+            "total": "number - Total da meta do período (geralmente 100)"
+          }
+        },
+        "mensal": "Mesma estrutura do semanal",
+        "anual": "Mesma estrutura do semanal"
+      },
+      "example": {
+        "semanal": {
+          "vendas_totais": 125000,
+          "meta_vendas": 150000,
+          "tendencia_vendas": 8,
+          "leads_qualificados": 85,
+          "meta_leads": 100,
+          "tendencia_leads": -5,
+          "taxa_conversao": 14.2,
+          "meta_conversao": 15.0,
+          "tendencia_conversao": 2,
+          "meta_periodo": {
+            "atual": 25,
+            "total": 100
+          }
+        },
+        "mensal": {
+          "vendas_totais": 450000,
+          "meta_vendas": 500000,
+          "tendencia_vendas": 12,
+          "leads_qualificados": 320,
+          "meta_leads": 350,
+          "tendencia_leads": 15,
+          "taxa_conversao": 16.8,
+          "meta_conversao": 15.0,
+          "tendencia_conversao": 12,
+          "meta_periodo": {
+            "atual": 72,
+            "total": 100
+          }
+        },
+        "anual": {
+          "vendas_totais": 4200000,
+          "meta_vendas": 6000000,
+          "tendencia_vendas": 18,
+          "leads_qualificados": 2850,
+          "meta_leads": 4000,
+          "tendencia_leads": 22,
+          "taxa_conversao": 15.4,
+          "meta_conversao": 16.0,
+          "tendencia_conversao": -3,
+          "meta_periodo": {
+            "atual": 58,
+            "total": 100
+          }
+        }
+      }
+    },
+    "vendas_produtos": {
+      "url": "/vendas-produtos",
+      "method": "GET",
+      "description": "Dados de vendas por produto para ComercialTela02",
+      "response_format": {
+        "produtos": [
+          {
+            "nome": "string - Nome do produto",
+            "vendas": "number - Valor de vendas do produto",
+            "meta": "number - Meta de vendas do produto",
+            "categoria": "string - Categoria do produto (Premium, Standard, Basic)"
+          }
+        ]
+      },
+      "example": {
+        "produtos": [
+          {
+            "nome": "Produto A",
+            "vendas": 180000,
+            "meta": 200000,
+            "categoria": "Premium"
+          },
+          {
+            "nome": "Produto B",
+            "vendas": 150000,
+            "meta": 160000,
+            "categoria": "Standard"
+          },
+          {
+            "nome": "Produto C",
+            "vendas": 120000,
+            "meta": 140000,
+            "categoria": "Basic"
+          }
+        ]
+      }
+    },
+    "atividades_comerciais": {
+      "url": "/atividades-comerciais",
+      "method": "GET",
+      "description": "Dados de atividades da equipe comercial para ComercialTela02",
+      "response_format": {
+        "atividades": [
+          {
+            "tipo": "string - Tipo da atividade (Ligações, E-mails, Reuniões, etc.)",
+            "realizadas": "number - Quantidade realizada",
+            "meta": "number - Meta da atividade",
+            "responsavel": "string - Responsável pela atividade (opcional)"
+          }
+        ]
+      },
+      "example": {
+        "atividades": [
+          {
+            "tipo": "Ligações",
+            "realizadas": 1250,
+            "meta": 1200,
+            "responsavel": "Equipe Comercial"
+          },
+          {
+            "tipo": "E-mails",
+            "realizadas": 890,
+            "meta": 800,
+            "responsavel": "Equipe Comercial"
+          },
+          {
+            "tipo": "Reuniões",
+            "realizadas": 145,
+            "meta": 150,
+            "responsavel": "Gerentes"
+          }
+        ]
+      }
+    },
+    "funil_detalhado": {
+      "url": "/funil-detalhado",
+      "method": "GET",
+      "description": "Funil de vendas detalhado com métricas avançadas para ComercialTela02",
+      "response_format": {
+        "etapas": [
+          {
+            "nome": "string - Nome da etapa do funil",
+            "quantidade": "number - Quantidade de oportunidades na etapa",
+            "taxa_conversao": "number - Taxa de conversão para próxima etapa (opcional)",
+            "valor_total": "number - Valor monetário total da etapa",
+            "tempo_medio_dias": "number - Tempo médio em dias na etapa",
+            "oportunidades_perdidas": "number - Quantidade de oportunidades perdidas"
+          }
+        ]
+      },
+      "example": {
+        "etapas": [
+          {
+            "nome": "Leads",
+            "quantidade": 1250,
+            "valor_total": 2500000,
+            "tempo_medio_dias": 1,
+            "oportunidades_perdidas": 0
+          },
+          {
+            "nome": "Qualificados",
+            "quantidade": 750,
+            "taxa_conversao": 60,
+            "valor_total": 1875000,
+            "tempo_medio_dias": 3,
+            "oportunidades_perdidas": 500
+          },
+          {
+            "nome": "Propostas",
+            "quantidade": 320,
+            "taxa_conversao": 43,
+            "valor_total": 1280000,
+            "tempo_medio_dias": 7,
+            "oportunidades_perdidas": 430
+          },
+          {
+            "nome": "Fechados",
+            "quantidade": 108,
+            "taxa_conversao": 34,
+            "valor_total": 540000,
+            "tempo_medio_dias": 14,
+            "oportunidades_perdidas": 212
+          }
+        ]
+      }
+    }
+  },
+  "authentication": {
+    "type": "Bearer Token ou API Key",
+    "header": "Authorization: Bearer YOUR_TOKEN",
+    "note": "Configure as credenciais de autenticação conforme necessário"
+  },
+  "error_handling": {
+    "description": "Em caso de erro na API, o sistema utilizará dados de fallback",
+    "fallback_behavior": "Dados mockados serão exibidos automaticamente",
+    "retry_logic": "O sistema tentará reconectar automaticamente"
+  },
+  "update_frequency": {
+    "recommended": "A cada 30 segundos para dados em tempo real",
+    "minimum": "A cada 5 minutos para dados menos críticos",
+    "note": "Configure o parâmetro dataRefresh na URL para controlar a frequência"
+  },
+  "testing": {
+    "connectivity_test": "Use a função testWebhookConnectivity() para verificar conexões",
+    "mock_data": "Dados de fallback estão disponíveis para desenvolvimento e testes",
+    "validation": "Todos os endpoints devem retornar status 200 para funcionamento correto"
+  }
+}
