@@ -123,10 +123,10 @@ export default function RankingVendas({ isTvMode }: RankingVendasProps) {
 
   const getPodiumColors = (position: number) => {
     switch (position) {
-      case 1: return { bg: "bg-gradient-to-br from-yellow-400/60 to-yellow-600/80", border: "border-yellow-400/40", text: "text-yellow-400", glow: "shadow-yellow-400/20" }
-      case 2: return { bg: "bg-gradient-to-br from-gray-300/60 to-gray-500/80", border: "border-gray-300/40", text: "text-gray-300", glow: "shadow-gray-300/20" }
-      case 3: return { bg: "bg-gradient-to-br from-amber-600/60 to-amber-800/80", border: "border-amber-600/40", text: "text-amber-600", glow: "shadow-amber-600/20" }
-      default: return { bg: "bg-gray-800/50", border: "border-gray-700", text: "text-gray-400", glow: "shadow-none" }
+      case 1: return { bg: "bg-gradient-to-br from-yellow-400/30 to-yellow-700/20", border: "border-yellow-400/40", text: "text-yellow-400", glow: "shadow-yellow-400/20" }
+      case 2: return { bg: "bg-gradient-to-br from-gray-300/30 to-gray-500/20", border: "border-gray-300/40", text: "text-gray-300", glow: "shadow-gray-300/20" }
+      case 3: return { bg: "bg-gradient-to-br from-amber-600/30 to-amber-800/20", border: "border-amber-600/40", text: "text-amber-600", glow: "shadow-amber-600/20" }
+      default: return { bg: "bg-gray-800/90", border: "border-gray-700", text: "text-gray-400", glow: "shadow-none" }
     }
   }
 
@@ -199,7 +199,7 @@ export default function RankingVendas({ isTvMode }: RankingVendasProps) {
       <div className={`grid grid-cols-1 md:grid-cols-3 gap-15 ${isTvMode ? "gap-8" : ""}`}>
         {topThree[1] && (
           <div className="order-1 md:order-1">
-            <Card className={`${getPodiumColors(2).bg} ${getPodiumColors(2).border} border-2 shadow-2xl ${getPodiumColors(2).glow} hover:scale-105 transition-all duration-300 ${getAdaptivePodiumHeight(others.length, 2, isTvMode)}`}>
+            <Card className={`!bg-transparent ${getPodiumColors(2).bg} ${getPodiumColors(2).border} border-2 shadow-2xl ${getPodiumColors(2).glow} hover:scale-105 transition-all duration-300 ${getAdaptivePodiumHeight(others.length, 2, isTvMode)}`}>
               <CardContent className={`p-6 text-center ${isTvMode ? "p-8" : ""} h-full flex flex-col justify-between`}>
                 <div>
                   <div className="flex justify-center mb-4">{getPodiumIcon(2)}</div>
@@ -219,7 +219,7 @@ export default function RankingVendas({ isTvMode }: RankingVendasProps) {
         )}
         {topThree[0] && (
           <div className="order-2 md:order-2">
-            <Card className={`${getPodiumColors(1).bg} ${getPodiumColors(1).border} border-4 shadow-2xl ${getPodiumColors(1).glow} hover:scale-105 transition-all duration-300 ${getAdaptivePodiumHeight(others.length, 1, isTvMode)} min-h-[370px] flex flex-col justify-between`}>
+            <Card className={`!bg-transparent ${getPodiumColors(1).bg} ${getPodiumColors(1).border} border-4 shadow-2xl ${getPodiumColors(1).glow} hover:scale-105 transition-all duration-300 ${getAdaptivePodiumHeight(others.length, 1, isTvMode)} min-h-[370px] flex flex-col justify-between`}>
               <CardContent className={`p-6 text-center ${isTvMode ? "p-10" : ""} h-full flex flex-col justify-between`}>
                 <div>
                   <div className="flex justify-center mb-4">{getPodiumIcon(1)}</div>
@@ -240,7 +240,7 @@ export default function RankingVendas({ isTvMode }: RankingVendasProps) {
         )}
         {topThree[2] && (
           <div className="order-3 md:order-3">
-            <Card className={`${getPodiumColors(3).bg} ${getPodiumColors(3).border} border-2 shadow-2xl ${getPodiumColors(3).glow} hover:scale-105 transition-all duration-300 ${getAdaptivePodiumHeight(others.length, 3, isTvMode)}`}>
+            <Card className={`!bg-transparent ${getPodiumColors(3).bg} ${getPodiumColors(3).border} border-2 shadow-2xl ${getPodiumColors(3).glow} hover:scale-105 transition-all duration-300 ${getAdaptivePodiumHeight(others.length, 3, isTvMode)}`}>
               <CardContent className={`p-6 text-center ${isTvMode ? "p-8" : ""} h-full flex flex-col justify-between`}>
                 <div>
                   <div className="flex justify-center mb-4">{getPodiumIcon(3)}</div>

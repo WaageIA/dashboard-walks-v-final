@@ -194,7 +194,7 @@ export default function RankingVendas02({ isTvMode }: RankingVendas02Props) {
           <div className="flex justify-center">
             <div className="grid grid-cols-3 gap-10 items-end w-full max-w-3xl min-w-[540px]">
               {topThree[1] && (
-                <Card className={`${getPodiumStyles(2, others.length, isTvMode).cardClass} ${getPodiumStyles(2, others.length, isTvMode).height} flex flex-col min-w-[170px] max-w-[240px]`}>
+                <Card className={`!bg-transparent ${getPodiumStyles(2, others.length, isTvMode).cardClass} ${getPodiumStyles(2, others.length, isTvMode).height} flex flex-col min-w-[170px] max-w-[240px]`}>
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-center space-x-1">
                       <Medal className={`${getPodiumStyles(2, others.length, isTvMode).iconColor} ${isTvMode ? "h-5 w-5" : "h-4 w-4"}`} />
@@ -218,7 +218,7 @@ export default function RankingVendas02({ isTvMode }: RankingVendas02Props) {
                 </Card>
               )}
               {topThree[0] && (
-                <Card className={`${getPodiumStyles(1, others.length, isTvMode).cardClass} ${getPodiumStyles(1, others.length, isTvMode).height} flex flex-col min-w-[190px] max-w-[260px]`}>
+                <Card className={`!bg-transparent ${getPodiumStyles(1, others.length, isTvMode).cardClass} ${getPodiumStyles(1, others.length, isTvMode).height} flex flex-col min-w-[190px] max-w-[260px]`}>
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-center space-x-1">
                       <Crown className={`${getPodiumStyles(1, others.length, isTvMode).iconColor} ${isTvMode ? "h-6 w-6" : "h-5 w-5"}`} />
@@ -242,7 +242,7 @@ export default function RankingVendas02({ isTvMode }: RankingVendas02Props) {
                 </Card>
               )}
               {topThree[2] && (
-                <Card className={`${getPodiumStyles(3, others.length, isTvMode).cardClass} ${getPodiumStyles(3, others.length, isTvMode).height} flex flex-col min-w-[170px] max-w-[240px]`}>
+                <Card className={`!bg-transparent ${getPodiumStyles(3, others.length, isTvMode).cardClass} ${getPodiumStyles(3, others.length, isTvMode).height} flex flex-col min-w-[170px] max-w-[240px]`}>
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-center space-x-1">
                       <Award className={`${getPodiumStyles(3, others.length, isTvMode).iconColor} ${isTvMode ? "h-5 w-5" : "h-4 w-4"}`} />
@@ -319,21 +319,21 @@ export default function RankingVendas02({ isTvMode }: RankingVendas02Props) {
       </div>
 
       <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 ${isTvMode ? "gap-8" : ""}`}>
-        <Card className="bg-gradient-to-br from-green-600/20 to-green-800/20 border-green-600/40 border-2">
+        <Card className="!bg-transparent bg-gradient-to-br from-green-600/20 to-green-800/20 border-green-600/40 border-2">
           <CardContent className={`p-6 text-center ${isTvMode ? "p-8" : ""}`}>
             <TrendingUp className={`mx-auto mb-4 text-green-400 ${isTvMode ? "h-12 w-12" : "h-8 w-8"}`} />
             <div className={`font-bold text-white ${isTvMode ? "text-3xl" : "text-2xl"}`}>{vendedores.filter((m) => m.status === "Superou").length}</div>
             <div className={`text-green-400 ${isTvMode ? "text-lg" : "text-sm"}`}>Vendedores acima da meta</div>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-blue-600/20 to-blue-800/20 border-blue-600/40 border-2">
+        <Card className="!bg-transparent bg-gradient-to-br from-blue-600/20 to-blue-800/20 border-blue-600/40 border-2">
           <CardContent className={`p-6 text-center ${isTvMode ? "p-8" : ""}`}>
             <Trophy className={`mx-auto mb-4 text-blue-400 ${isTvMode ? "h-12 w-12" : "h-8 w-8"}`} />
             <div className={`font-bold text-white ${isTvMode ? "text-3xl" : "text-2xl"}`}>{formatCurrency(vendedores.reduce((sum, m) => sum + m.salesMonth, 0))}</div>
             <div className={`text-blue-400 ${isTvMode ? "text-lg" : "text-sm"}`}>Total de vendas da equipe</div>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-purple-600/20 to-purple-800/20 border-purple-600/40 border-2">
+        <Card className="!bg-transparent bg-gradient-to-br from-purple-600/20 to-purple-800/20 border-purple-600/40 border-2">
           <CardContent className={`p-6 text-center ${isTvMode ? "p-8" : ""}`}>
             <Target className={`mx-auto mb-4 text-purple-400 ${isTvMode ? "h-12 w-12" : "h-8 w-8"}`} />
             <div className={`font-bold text-white ${isTvMode ? "text-3xl" : "text-2xl"}`}>{Math.round(vendedores.reduce((sum, m) => sum + m.percentage, 0) / (vendedores.length || 1))}%</div>
