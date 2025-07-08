@@ -1,3 +1,14 @@
+export interface Vendedor {
+  id: string;
+  nome: string;
+  foto: string;
+  vendas: number;
+  meta: number;
+  percentual: number;
+  status: "Superou" | "Próximo" | "Abaixo";
+  posicao: number;
+}
+
 export interface DashboardData {
   metrics: Array<{
     type: "sales" | "leads" | "followers" | "conversion";

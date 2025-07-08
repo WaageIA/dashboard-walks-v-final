@@ -1,107 +1,17 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
-import { supabase } from "@/lib/supabaseClient"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Trophy, Medal, Award, Crown, Target, AlertCircle } from "lucide-react"
-
-// Interface para os dados que o componente espera
-// Corresponde ao que a função get_ranking_mensal retorna
-interface Vendedor {
-  id: string
-  nome: string
-  foto: string
-  vendas: number
-  meta: number
-  percentual: number
-  status: "Superou" | "Próximo" | "Abaixo"
-  posicao: number
-}
+import { Trophy, Medal, Award, Crown, Target } from "lucide-react"
+import type { Vendedor } from "@/types/dashboard"
 
 interface RankingVendasProps {
   isTvMode: boolean
+  vendedores: Vendedor[]
 }
 
-export default function RankingVendas({ isTvMode }: RankingVendasProps) {
-  const [vendedores, setVendedores] = useState<Vendedor[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  // 1. Função para processar os dados vindos da RPC
-  // A RPC já retorna os dados ordenados, então só precisamos calcular os campos derivados
-  const processVendedores = useCallback((data: any[]): Vendedor[] => {
-    return data.map((v, index) => {
-      const percentual = v.meta > 0 ? Math.round((v.vendas / v.meta) * 100) : 0
-      let status: "Superou" | "Próximo" | "Abaixo"
-      if (percentual >= 100) {
-        status = "Superou"
-      } else if (percentual >= 80) {
-        status = "Próximo"
-      } else {
-        status = "Abaixo"
-      }
-      return {
-        ...v,
-        percentual,
-        status,
-        posicao: index + 1, // A posição é o próprio índice + 1
-      }
-    })
-  }, [])
-
-  // 2. Função para buscar os dados chamando a RPC
-  const fetchRankingMensal = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      // Chamada à função do banco de dados
-      const { data, error } = await supabase.rpc("get_ranking_mensal")
-
-      if (error) {
-        console.error("Erro ao chamar RPC get_ranking_mensal:", error)
-        throw new Error("A função para calcular o ranking falhou.")
-      }
-
-      if (data) {
-        const processedData = processVendedores(data)
-        setVendedores(processedData)
-      }
-    } catch (err: any) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }, [processVendedores])
-
-  // 3. useEffect para busca inicial e listener de Realtime
-  useEffect(() => {
-    fetchRankingMensal()
-
-    // O gatilho para atualizar o ranking mensal é uma nova venda.
-    // Portanto, ouvimos a tabela 'registros_vendas'.
-    const channel = supabase
-      .channel("ranking_mensal_realtime")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "registros_vendas" },
-        (payload) => {
-          console.log("Nova venda detectada! Atualizando ranking mensal...", payload)
-          // Quando uma nova venda é registrada, chamamos a RPC novamente
-          // para obter o ranking recalculado.
-          fetchRankingMensal()
-        }
-      )
-      .subscribe()
-
-    // Limpeza ao desmontar o componente
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [fetchRankingMensal])
-
-  // --- O restante do código do componente (lógica de UI) permanece o mesmo ---
-
+export default function RankingVendas({ isTvMode, vendedores = [] }: RankingVendasProps) {
+  // Funções de ajuda para a UI (sem alterações)
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
@@ -156,25 +66,6 @@ export default function RankingVendas({ isTvMode }: RankingVendasProps) {
     if (percentage >= 100) return "bg-green-500"
     if (percentage >= 80) return "bg-yellow-500"
     return "bg-red-500"
-  }
-
-  if (loading) {
-    return (
-      <div className="space-y-6 text-center">
-        <h2 className={`font-bold text-white ${isTvMode ? "text-4xl" : "text-2xl"}`}>Calculando Ranking Mensal...</h2>
-        <div className="animate-pulse"><div className="h-96 bg-gray-800 rounded-lg"></div></div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center h-96 bg-red-900/20 border border-red-500/30 rounded-lg p-8 text-center">
-        <AlertCircle className="h-16 w-16 text-red-400 mb-4" />
-        <h2 className={`font-bold text-red-400 ${isTvMode ? "text-3xl" : "text-xl"}`}>Erro ao Carregar Ranking</h2>
-        <p className={`text-red-300 mt-2 ${isTvMode ? "text-lg" : "text-base"}`}>{error}</p>
-      </div>
-    )
   }
 
   const topThree = vendedores.slice(0, 3)

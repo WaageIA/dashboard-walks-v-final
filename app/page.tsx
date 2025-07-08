@@ -2,8 +2,9 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useSearchParams } from "next/navigation"
+import { supabase } from "@/lib/supabaseClient"
 
 import Header from "@/components/dashboard/Header"
 import Navigation from "@/components/dashboard/Navigation"
@@ -21,8 +22,9 @@ import MarketingTela02 from "@/components/dashboard/pages/MarketingTela02"
 import SuporteDashboard from "@/components/dashboard/pages/SuporteDashboard"
 import TPVDashboard from "@/components/dashboard/pages/TPVDashboard"
 import TPVTela02 from "@/components/dashboard/pages/TPVTela02"
+import PodiumChangePopup from "@/components/dashboard/PodiumChangePopup"
 import { generateDashboardData } from "@/lib/mockData"
-import type { DashboardData } from "@/types/dashboard"
+import type { DashboardData, Vendedor } from "@/types/dashboard"
 
 // Componentes placeholder
 const OutroDepartamento1 = ({ isTvMode }: { isTvMode: boolean }) => (
@@ -44,13 +46,18 @@ const DashboardLoadingSkeleton = () => (
 )
 
 export default function Dashboard() {
-  // 1. Hook para resolver o problema de hidratação
   const [isClient, setIsClient] = useState(false)
   useEffect(() => {
     setIsClient(true)
   }, [])
 
   const searchParams = useSearchParams()
+
+  // Parâmetros da URL
+  const isTvMode = searchParams.get("tv") === "true"
+  const view = searchParams.get("view") || "default"
+  const rotateDepts = searchParams.get("rotateDepts") || ""
+  const viewRefresh = Number.parseInt(searchParams.get("viewRefresh") || "20000")
 
   // Estados principais
   const [data] = useState<DashboardData>(generateDashboardData())
@@ -59,25 +66,98 @@ export default function Dashboard() {
   const [currentRotatingDeptIndex, setCurrentRotatingDeptIndex] = useState(0)
   const [activeTab, setActiveTab] = useState("resumo")
 
-  // Parâmetros da URL - agora lidos de forma segura
-  const isTvMode = searchParams.get("tv") === "true"
-  const view = searchParams.get("view") || "default"
-  const rotateDepts = searchParams.get("rotateDepts") || ""
-  const viewRefresh = Number.parseInt(searchParams.get("viewRefresh") || "20000")
+  // --- Lógica do Ranking de Vendas movida para cá ---
+  const [rankingVendedores, setRankingVendedores] = useState<Vendedor[]>([])
+  const [celebratedVendedor, setCelebratedVendedor] = useState<Vendedor | null>(null)
+  const previousVendedoresRef = useRef<Vendedor[]>([])
 
-  // Simulação de carregamento
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false)
-      setLastUpdate(new Date())
-    }, 1000)
-    return () => clearTimeout(timer)
+    previousVendedoresRef.current = rankingVendedores
+  }, [rankingVendedores])
+
+  const processVendedores = useCallback((data: any[]): Vendedor[] => {
+    return data.map((v, index) => ({
+      ...v,
+      percentual: v.meta > 0 ? Math.round((v.vendas / v.meta) * 100) : 0,
+      status: v.meta > 0 && (v.vendas / v.meta) * 100 >= 100 ? "Superou" : (v.meta > 0 && (v.vendas / v.meta) * 100 >= 80 ? "Próximo" : "Abaixo"),
+      posicao: index + 1,
+    }))
   }, [])
 
-  const departmentComponentMap: Record<
-    string,
-    React.ComponentType<{ data?: DashboardData; loading?: boolean; isTvMode: boolean }>
-  > = {
+  const checkForPodiumChanges = useCallback((newVendedores: Vendedor[]) => {
+    const oldVendedores = previousVendedoresRef.current
+    if (oldVendedores.length === 0) return
+
+    const newPodium = newVendedores.slice(0, 3)
+    for (const newVendedor of newPodium) {
+      const oldData = oldVendedores.find(v => v.id === newVendedor.id)
+      const oldPosition = oldData ? oldData.posicao : Infinity
+      if (newVendedor.posicao < oldPosition && newVendedor.posicao <= 3) {
+        setCelebratedVendedor(newVendedor)
+        return
+      }
+    }
+  }, [])
+
+  const fetchRankingMensal = useCallback(async (isInitialLoad = false) => {
+    if (!isInitialLoad) {
+      console.log("Realtime update triggered: Fetching new ranking data...");
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase.rpc("get_ranking_mensal");
+      if (error) {
+        console.error("Erro ao chamar RPC get_ranking_mensal:", error);
+        throw new Error("A função para calcular o ranking falhou.");
+      }
+      if (data) {
+        const processedData = processVendedores(data);
+        checkForPodiumChanges(processedData);
+        previousVendedoresRef.current = processedData; // Atualiza imediatamente após a checagem
+        setRankingVendedores(processedData);
+        setLastUpdate(new Date());
+      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [processVendedores, checkForPodiumChanges]);
+
+
+  // Efeito para carregar dados e configurar listeners
+  useEffect(() => {
+    // Determina qual "aba" ou view está ativa
+    const currentKey = (view === "left" || view === "right")
+      ? (rotateDepts.split(",").map((k) => k.trim())[currentRotatingDeptIndex] || "resumo")
+      : activeTab
+
+    if (currentKey === "ranking_vendas") {
+      fetchRankingMensal(true);
+      const channel = supabase
+        .channel("ranking_mensal_realtime_global")
+        .on("postgres_changes", { event: "*", schema: "public", table: "registros_vendas" }, () => {
+          fetchRankingMensal(false);
+        })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } else {
+      // Se não for a página de ranking, apenas termina o carregamento
+      const timer = setTimeout(() => {
+        setLoading(false);
+        setLastUpdate(new Date());
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [activeTab, currentRotatingDeptIndex, rotateDepts, view, fetchRankingMensal]);
+
+  const departmentComponentMap: Record<string, React.ComponentType<any>> = {
     resumo: ResumoGeral,
     comercial: TimeComercial,
     marketing: TimeMarketing,
@@ -85,8 +165,8 @@ export default function Dashboard() {
     comercial_tela02: ComercialTela02,
     marketing_tela01: MarketingTela01,
     marketing_tela02: MarketingTela02,
-    ranking_vendas: (props) => <RankingVendas isTvMode={props.isTvMode} />,
-    ranking_vendas_02: (props) => <RankingVendas02 isTvMode={props.isTvMode} />,
+    ranking_vendas: RankingVendas, // Apenas a referência ao componente
+    ranking_vendas_02: RankingVendas02,
     metas_produtos: ResumoMetasProdutos,
     suporte: SuporteDashboard,
     tpv: TPVDashboard,
@@ -111,15 +191,21 @@ export default function Dashboard() {
     setCurrentRotatingDeptIndex(0)
   }, [rotateDepts])
 
-  // 2. Renderiza um skeleton se não estiver no cliente ainda
   if (!isClient) {
     return <DashboardLoadingSkeleton />
   }
 
-  // Lógica de renderização principal
   const renderMainContent = () => {
-    if (loading) {
+    if (loading && !rankingVendedores.length) {
       return <DashboardLoadingSkeleton />
+    }
+
+    if (error) {
+        return (
+            <div className="flex items-center justify-center h-96 text-red-400 text-2xl">
+                Erro ao carregar dados do ranking: {error}
+            </div>
+        );
     }
 
     const currentKey = (view === "left" || view === "right")
@@ -127,6 +213,11 @@ export default function Dashboard() {
       : activeTab
 
     const CurrentComponent = departmentComponentMap[currentKey] || departmentComponentMap["resumo"]
+
+    // Passagem de props explícita
+    if (currentKey === 'ranking_vendas') {
+      return <RankingVendas isTvMode={isTvMode} vendedores={rankingVendedores} />;
+    }
 
     return <CurrentComponent data={data} loading={loading} isTvMode={isTvMode} />
   }
@@ -137,6 +228,12 @@ export default function Dashboard() {
 
   return (
     <div className={`min-h-screen bg-gray-950 ${isTvMode ? "tv-mode" : ""}`}>
+      {celebratedVendedor && (
+        <PodiumChangePopup
+          vendedor={celebratedVendedor}
+          onClose={() => setCelebratedVendedor(null)}
+        />
+      )}
       <div className="fixed inset-0 opacity-5" style={{ backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.1) 1px, transparent 0)`, backgroundSize: "24px 24px" }}></div>
       <div className="relative z-10">
         {showHeader && <Header lastUpdate={lastUpdate} isRefreshing={loading} isTvMode={isTvMode} />}

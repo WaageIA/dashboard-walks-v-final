@@ -15,7 +15,7 @@ export default function ActionBar({ isTvMode }: ActionBarProps) {
 
   const handleTelaEsquerdaClick = () => {
     // Incluindo a nova página ranking_vendas_02 na rotação da Tela 01
-    const url = `${window.location.origin}/?view=left&rotateDepts=ranking_vendas,ranking_vendas_02,resumogeral&tv=true&viewRefresh=20000&dataRefresh=300000`
+    const url = `${window.location.origin}/?view=left&rotateDepts=ranking_vendas,ranking_vendas_02&tv=true&viewRefresh=20000&dataRefresh=300000`
     window.open(url, "_blank", "width=1920,height=1080")
   }
 
