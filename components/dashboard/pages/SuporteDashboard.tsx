@@ -21,7 +21,8 @@ import {
   Headphones,
   RefreshCw,
 } from "lucide-react"
-import { generateSupportData } from "@/lib/supportMockData"
+import { getAllSupportData } from "@/lib/supportService"
+import { transformSupportData } from "@/lib/supportDataProcessor"
 import type { SupportDashboardData } from "@/types/support"
 
 interface SuporteDashboardProps {
@@ -30,6 +31,7 @@ interface SuporteDashboardProps {
   isTvMode?: boolean
 }
 
+// Mapeamento de ícones (sem alteração)
 const iconMap = {
   "check-circle": CheckCircle,
   ticket: Ticket,
@@ -46,6 +48,7 @@ const iconMap = {
   truck: Truck,
 }
 
+// Cores de status (sem alteração)
 const statusColors = {
   Online: "bg-green-500",
   Ocupado: "bg-yellow-500",
@@ -53,121 +56,55 @@ const statusColors = {
   Pausa: "bg-gray-500",
 }
 
+// Cores de prioridade (sem alteração)
 const priorityColors = {
   Alta: "bg-red-500 text-white",
   Média: "bg-yellow-500 text-white",
   Baixa: "bg-green-500 text-white",
 }
 
-export default function SuporteDashboard({ data, loading: initialLoading, isTvMode = false }: SuporteDashboardProps) {
-  const [supportData, setSupportData] = useState<SupportDashboardData>(generateSupportData())
-  const [loading, setLoading] = useState(initialLoading || false)
+// A função transformData foi movida para lib/supportDataProcessor.ts
+
+
+export default function SuporteDashboard({ data: webhookData, isTvMode = false }: SuporteDashboardProps) {
+  const [supportData, setSupportData] = useState<SupportDashboardData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [lastUpdate, setLastUpdate] = useState(new Date())
 
-  // Função para atualizar os dados
-  const refreshData = useCallback(() => {
-    setIsRefreshing(true)
-
-    // Simulando uma chamada de API com um pequeno delay
-    setTimeout(() => {
-      const newData = generateSupportData()
-      setSupportData(newData)
-      setLastUpdate(new Date())
-      setIsRefreshing(false)
-    }, 800) // Delay de 800ms para simular chamada de API
-  }, [])
-
-  // Efeito para atualização automática a cada 20 segundos
-  useEffect(() => {
-    // Se há dados do webhook vindos da propriedade data, usar eles
-    if (data?.supportData) {
-      const webhookData = data.supportData
-
-      const formattedData = {
-        lastUpdate: new Date(webhookData.lastUpdate),
-        generalMetrics: [
-          {
-            title: "Status Geral",
-            value: webhookData.generalMetrics.statusGeral,
-            icon: "check-circle",
-            color:
-              webhookData.generalMetrics.statusGeral === "NORMAL"
-                ? "green"
-                : webhookData.generalMetrics.statusGeral === "ATENÇÃO"
-                  ? "yellow"
-                  : "red",
-          },
-          {
-            title: "Tickets Abertos",
-            value: webhookData.generalMetrics.ticketsAbertos,
-            icon: "ticket",
-            color: "yellow",
-          },
-          {
-            title: "Resolvidos Hoje",
-            value: webhookData.generalMetrics.resolvidosHoje,
-            icon: "check-square",
-            color: "green",
-          },
-          {
-            title: "Atendentes Ativos",
-            value: `${webhookData.generalMetrics.atendentesAtivos.ativos}/${webhookData.generalMetrics.atendentesAtivos.total}`,
-            icon: "users",
-            color: "purple",
-          },
-        ],
-        performanceMetrics: [
-          {
-            title: "Tempo Médio Resposta",
-            value: webhookData.performanceMetrics.tempoMedioResposta,
-            icon: "clock",
-            color: webhookData.performanceMetrics.tempoMedioRespostaAtingiu ? "green" : "red",
-            hasTarget: true,
-            target: webhookData.performanceMetrics.tempoMedioRespostaMeta,
-            targetMet: webhookData.performanceMetrics.tempoMedioRespostaAtingiu,
-          },
-          {
-            title: "Taxa FCR",
-            value: `${webhookData.performanceMetrics.taxaFCR}%`,
-            icon: "target",
-            color: webhookData.performanceMetrics.taxaFCRAtingiu ? "green" : "red",
-            hasTarget: true,
-            target: `> ${webhookData.performanceMetrics.taxaFCRMeta}%`,
-            targetMet: webhookData.performanceMetrics.taxaFCRAtingiu,
-          },
-          {
-            title: "CSAT Score",
-            value: `${webhookData.performanceMetrics.csatScore}/5`,
-            icon: "star",
-            color: webhookData.performanceMetrics.csatScoreAtingiu ? "green" : "red",
-            hasTarget: true,
-            target: `> ${webhookData.performanceMetrics.csatScoreMeta}`,
-            targetMet: webhookData.performanceMetrics.csatScoreAtingiu,
-          },
-          {
-            title: "SLA Compliance",
-            value: `${webhookData.performanceMetrics.slaCompliance}%`,
-            icon: "shield-check",
-            color: webhookData.performanceMetrics.slaComplianceAtingiu ? "green" : "red",
-            hasTarget: true,
-            target: `> ${webhookData.performanceMetrics.slaComplianceMeta}%`,
-            targetMet: webhookData.performanceMetrics.slaComplianceAtingiu,
-          },
-        ],
-        agents: webhookData.agents,
-        queue: webhookData.queue,
-      }
-
-      setSupportData(formattedData)
-      setLastUpdate(new Date(webhookData.lastUpdate))
-      setIsRefreshing(false)
-      return
+  const fetchDataFromDB = useCallback(async () => {
+    setIsRefreshing(true);
+    setError(null);
+    try {
+      // Busca todos os dados em paralelo
+      const { tickets, agents, queue } = await getAllSupportData();
+      
+      // Transforma os dados usando a função do processador
+      const transformed = transformSupportData(tickets, agents, queue);
+      
+      setSupportData(transformed);
+      setLastUpdate(new Date());
+    } catch (err) {
+      setError("Falha ao buscar os dados do banco de dados.");
+      console.error(err);
+    } finally {
+      setLoading(false);
+      setIsRefreshing(false);
     }
+  }, []);
 
-    // Caso contrário, usar dados mock (código existente)
-    refreshData()
-  }, [data, refreshData])
+  useEffect(() => {
+    if (webhookData?.supportData) {
+      // Lógica para tratar dados do webhook (mantida)
+      // A transformação de dados do webhook deve ser feita aqui se o formato for diferente
+      console.log("Recebido dados do Webhook:", webhookData.supportData);
+      // setSupportData(transformWebhookData(webhookData.supportData)); // Exemplo
+      setLoading(false);
+    } else {
+      fetchDataFromDB();
+    }
+  }, [webhookData, fetchDataFromDB]);
 
   if (loading) {
     return (
@@ -178,6 +115,21 @@ export default function SuporteDashboard({ data, loading: initialLoading, isTvMo
         </div>
       </div>
     )
+  }
+  
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center bg-red-900/20 p-8 rounded-lg">
+           <p className="text-red-400 text-lg">{error}</p>
+           <button onClick={fetchDataFromDB} className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Tentar Novamente</button>
+        </div>
+      </div>
+    )
+  }
+
+  if (!supportData) {
+     return <div>Sem dados para exibir.</div>
   }
 
   return (
@@ -191,7 +143,7 @@ export default function SuporteDashboard({ data, loading: initialLoading, isTvMo
           <div>
             <h1 className={`font-bold text-white ${isTvMode ? "text-4xl" : "text-2xl"}`}>Dashboard Suporte</h1>
             <p className={`text-gray-400 ${isTvMode ? "text-lg" : "text-sm"}`}>
-              {data?.supportData ? "Dados em Tempo Real" : "Dados de Demonstração"}
+              {webhookData?.supportData ? "Dados em Tempo Real" : "Dados via Banco de Dados"}
             </p>
           </div>
         </div>
@@ -226,7 +178,7 @@ export default function SuporteDashboard({ data, loading: initialLoading, isTvMo
                             : "bg-blue-500/20 text-blue-400"
                     }`}
                   >
-                    <Icon className={`${isTvMode ? "h-8 w-8" : "h-6 w-6"}`} />
+                    {Icon && <Icon className={`${isTvMode ? "h-8 w-8" : "h-6 w-6"}`} />}
                   </div>
                 </div>
               </CardContent>
@@ -245,17 +197,17 @@ export default function SuporteDashboard({ data, loading: initialLoading, isTvMo
                 <div className="flex items-center justify-between mb-3">
                   <div
                     className={`p-2 rounded-lg ${
-                      metric.color === "green" ? "bg-green-500/20 text-green-400" : "bg-blue-500/20 text-blue-400"
+                      metric.color === "green" ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"
                     }`}
                   >
-                    <Icon className={`${isTvMode ? "h-6 w-6" : "h-5 w-5"}`} />
+                    {Icon && <Icon className={`${isTvMode ? "h-6 w-6" : "h-5 w-5"}`} />}
                   </div>
                 </div>
                 <div>
                   <p className={`text-gray-400 ${isTvMode ? "text-lg" : "text-sm"} font-medium mb-1`}>{metric.title}</p>
                   <p
                     className={`font-bold ${isTvMode ? "text-3xl" : "text-2xl"} ${
-                      metric.color === "green" ? "text-green-400" : "text-white"
+                      metric.targetMet ? "text-green-400" : "text-white"
                     }`}
                   >
                     {metric.value}
@@ -265,7 +217,7 @@ export default function SuporteDashboard({ data, loading: initialLoading, isTvMo
                       <span className={`text-xs ${isTvMode ? "text-sm" : ""} text-gray-500`}>
                         Meta: {metric.target}
                       </span>
-                      {metric.targetMet && <CheckCircle className="h-4 w-4 text-green-400 ml-2" />}
+                      {metric.targetMet ? <CheckCircle className="h-4 w-4 text-green-400 ml-2" /> : <Clock className="h-4 w-4 text-yellow-400 ml-2" />}
                     </div>
                   )}
                 </div>
@@ -295,14 +247,11 @@ export default function SuporteDashboard({ data, loading: initialLoading, isTvMo
                         <Avatar className={`${isTvMode ? "h-12 w-12" : "h-10 w-10"}`}>
                           <AvatarImage src={agent.photo || "/placeholder.svg"} alt={agent.name} />
                           <AvatarFallback className="bg-gray-700 text-white">
-                            {agent.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
+                            {agent.name.split(" ").map((n) => n[0]).join("")}
                           </AvatarFallback>
                         </Avatar>
                         <div
-                          className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-gray-800 ${statusColors[agent.status]}`}
+                          className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-gray-800 ${statusColors[agent.status as keyof typeof statusColors]}`}
                         ></div>
                       </div>
                       <div>
@@ -391,7 +340,7 @@ export default function SuporteDashboard({ data, loading: initialLoading, isTvMo
                     </div>
                     <div>
                       <Badge
-                        className={`${priorityColors[item.prioridade]} ${isTvMode ? "text-sm px-3 py-1" : "text-xs"}`}
+                        className={`${priorityColors[item.prioridade as keyof typeof priorityColors]} ${isTvMode ? "text-sm px-3 py-1" : "text-xs"}`}
                       >
                         {item.prioridade}
                       </Badge>

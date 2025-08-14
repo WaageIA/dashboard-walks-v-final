@@ -5,6 +5,7 @@ import type React from "react"
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
+import { useMounted } from "@/hooks/use-hydration-safe"
 
 import Header from "@/components/dashboard/Header"
 import Navigation from "@/components/dashboard/Navigation"
@@ -46,11 +47,7 @@ const DashboardLoadingSkeleton = () => (
 )
 
 export default function Dashboard() {
-  const [isClient, setIsClient] = useState(false)
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
-
+  const mounted = useMounted()
   const searchParams = useSearchParams()
 
   // Parâmetros da URL
@@ -176,7 +173,7 @@ export default function Dashboard() {
 
   // Lógica de rotação
   useEffect(() => {
-    if (isClient && (view === "left" || view === "right") && rotateDepts) {
+    if (mounted && (view === "left" || view === "right") && rotateDepts) {
       const deptKeys = rotateDepts.split(",").map((key) => key.trim()).filter(Boolean)
       if (deptKeys.length > 1) {
         const interval = setInterval(() => {
@@ -185,13 +182,13 @@ export default function Dashboard() {
         return () => clearInterval(interval)
       }
     }
-  }, [isClient, view, rotateDepts, viewRefresh])
+  }, [mounted, view, rotateDepts, viewRefresh])
 
   useEffect(() => {
     setCurrentRotatingDeptIndex(0)
   }, [rotateDepts])
 
-  if (!isClient) {
+  if (!mounted) {
     return <DashboardLoadingSkeleton />
   }
 

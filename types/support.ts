@@ -1,3 +1,18 @@
+export interface SupportTicket {
+  id: string
+  customer_name: string
+  company: string
+  product: string
+  status: 'Open' | 'In Progress' | 'Resolved' | 'Closed'
+  priority: 'Alta' | 'Média' | 'Baixa'
+  created_at: string
+  resolved_at?: string
+  assigned_agent_id?: string
+  csat_score?: number
+  fcr?: boolean
+  response_time_minutes?: number
+}
+
 export interface SupportAgent {
   id: string
   name: string

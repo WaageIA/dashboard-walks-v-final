@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Building2, RefreshCw, Activity, Monitor, RotateCcw } from "lucide-react"
+import { useMounted } from "@/hooks/use-hydration-safe"
 
 interface HeaderProps {
   lastUpdate: Date
@@ -20,15 +21,20 @@ export default function Header({
   rotateDepts,
   currentDeptIndex = 0,
 }: HeaderProps) {
-  const [currentTime, setCurrentTime] = useState(new Date())
+  const mounted = useMounted()
+  const [currentTime, setCurrentTime] = useState<Date | null>(null)
 
   useEffect(() => {
-    const timer = setInterval(() => {
+    if (mounted) {
       setCurrentTime(new Date())
-    }, 1000)
+      
+      const timer = setInterval(() => {
+        setCurrentTime(new Date())
+      }, 1000)
 
-    return () => clearInterval(timer)
-  }, [])
+      return () => clearInterval(timer)
+    }
+  }, [mounted])
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString("pt-BR", {
@@ -114,9 +120,11 @@ export default function Header({
           {/* Relógio */}
           <div className="text-right">
             <div className={`font-mono text-white font-bold ${isTvMode ? "text-2xl" : "text-lg"}`}>
-              {formatTime(currentTime)}
+              {mounted && currentTime ? formatTime(currentTime) : "--:--:--"}
             </div>
-            <div className={`text-gray-400 ${isTvMode ? "text-base" : "text-sm"}`}>{formatDate(currentTime)}</div>
+            <div className={`text-gray-400 ${isTvMode ? "text-base" : "text-sm"}`}>
+              {mounted && currentTime ? formatDate(currentTime) : "Carregando..."}
+            </div>
           </div>
 
           {/* Indicador de refresh */}
