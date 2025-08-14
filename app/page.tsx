@@ -62,6 +62,7 @@ export default function Dashboard() {
   const [lastUpdate, setLastUpdate] = useState(new Date())
   const [currentRotatingDeptIndex, setCurrentRotatingDeptIndex] = useState(0)
   const [activeTab, setActiveTab] = useState("resumo")
+  const [rotationBlocked, setRotationBlocked] = useState(false)
 
   // --- Lógica do Ranking de Vendas movida para cá ---
   const [rankingVendedores, setRankingVendedores] = useState<Vendedor[]>([])
@@ -171,18 +172,40 @@ export default function Dashboard() {
     outro1: OutroDepartamento1,
   }
 
-  // Lógica de rotação
+  // Lógica de rotação condicional
   useEffect(() => {
     if (mounted && (view === "left" || view === "right") && rotateDepts) {
       const deptKeys = rotateDepts.split(",").map((key) => key.trim()).filter(Boolean)
+      
+      // Verifica se é rotação entre ranking_vendas e ranking_vendas_02
+      const isRankingRotation = deptKeys.includes("ranking_vendas") && deptKeys.includes("ranking_vendas_02")
+      
       if (deptKeys.length > 1) {
         const interval = setInterval(() => {
+          // Se for rotação de ranking, verifica se há pelo menos 2 vendedores com vendas
+          if (isRankingRotation) {
+            const vendedoresComVendas = rankingVendedores.filter(v => v.vendas > 0).length
+            
+            // Se não houver pelo menos 2 vendedores com vendas, mantém apenas ranking_vendas
+            if (vendedoresComVendas < 2) {
+              const rankingIndex = deptKeys.indexOf("ranking_vendas")
+              if (rankingIndex !== -1) {
+                setCurrentRotatingDeptIndex(rankingIndex)
+                setRotationBlocked(true)
+                return // Não avança na rotação
+              }
+            } else {
+              setRotationBlocked(false)
+            }
+          }
+          
+          // Rotação normal
           setCurrentRotatingDeptIndex((prevIndex) => (prevIndex + 1) % deptKeys.length)
         }, viewRefresh)
         return () => clearInterval(interval)
       }
     }
-  }, [mounted, view, rotateDepts, viewRefresh])
+  }, [mounted, view, rotateDepts, viewRefresh, rankingVendedores])
 
   useEffect(() => {
     setCurrentRotatingDeptIndex(0)
@@ -213,7 +236,7 @@ export default function Dashboard() {
 
     // Passagem de props explícita
     if (currentKey === 'ranking_vendas') {
-      return <RankingVendas isTvMode={isTvMode} vendedores={rankingVendedores} />;
+      return <RankingVendas isTvMode={isTvMode} vendedores={rankingVendedores} rotationBlocked={rotationBlocked} />;
     }
 
     return <CurrentComponent data={data} loading={loading} isTvMode={isTvMode} />

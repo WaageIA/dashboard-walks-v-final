@@ -8,9 +8,10 @@ import type { Vendedor } from "@/types/dashboard"
 interface RankingVendasProps {
   isTvMode: boolean
   vendedores: Vendedor[]
+  rotationBlocked?: boolean
 }
 
-export default function RankingVendas({ isTvMode, vendedores = [] }: RankingVendasProps) {
+export default function RankingVendas({ isTvMode, vendedores = [], rotationBlocked = false }: RankingVendasProps) {
   // Funções de ajuda para a UI (sem alterações)
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -73,78 +74,126 @@ export default function RankingVendas({ isTvMode, vendedores = [] }: RankingVend
   const leftColumn = others.slice(0, Math.ceil(others.length / 2))
   const rightColumn = others.slice(Math.ceil(others.length / 2))
 
+  // Detecta cenários de vendas
+  const allSalesZero = vendedores.every(v => v.vendas === 0)
+  const vendedoresComVendas = vendedores.filter(v => v.vendas > 0).length
+
   return (
     <div className="space-y-8">
       <div className="text-center">
         <div className="flex items-center justify-center space-x-4 mb-4">
           <Trophy className={`text-yellow-400 ${isTvMode ? "h-12 w-12" : "h-8 w-8"}`} />
-          <h2 className={`font-bold text-white ${isTvMode ? "text-4xl" : "text-2xl"}`}>Ranking de Vendas do Mês</h2>
+          <h2 className={`font-bold text-white ${isTvMode ? "text-4xl" : "text-2xl"}`}>
+            {allSalesZero ? "🚀 Ranking de Vendas - Aguardando Primeiras Vendas!" : "Ranking de Vendas do Mês"}
+          </h2>
           <Trophy className={`text-yellow-400 ${isTvMode ? "h-12 w-12" : "h-8 w-8"}`} />
         </div>
         <p className={`text-gray-400 ${isTvMode ? "text-xl" : "text-base"}`}>
-          🏆 Competição do mês - Atualizado em tempo real! 🏆
+          {allSalesZero ? "🎯 O mês está começando - Vamos às vendas! 🎯" : "🏆 Competição do mês - Atualizado em tempo real! 🏆"}
         </p>
       </div>
 
       {/* Pódio */}
       <div className={`grid grid-cols-1 md:grid-cols-3 gap-15 ${isTvMode ? "gap-8" : ""}`}>
+        {/* 2º Lugar */}
         {topThree[1] && (
           <div className="order-1 md:order-1">
             <Card className={`!bg-transparent ${getPodiumColors(2).bg} ${getPodiumColors(2).border} border-2 shadow-2xl ${getPodiumColors(2).glow} hover:scale-105 transition-all duration-300 ${getAdaptivePodiumHeight(others.length, 2, isTvMode)}`}>
-              <CardContent className={`p-6 text-center ${isTvMode ? "p-8" : ""} h-full flex flex-col justify-between`}>
-                <div>
-                  <div className="flex justify-center mb-4">{getPodiumIcon(2)}</div>
-                  <div className="relative mb-4">
-                    <img src={topThree[1].foto || "/placeholder.svg?height=100&width=100"} alt={topThree[1].nome} className={`mx-auto rounded-full border-4 ${getPodiumColors(2).border} ${isTvMode ? "w-24 h-24" : "w-20 h-20"}`} />
-                    <div className={`absolute -top-2 -right-2 w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center font-bold text-gray-800 ${isTvMode ? "w-10 h-10 text-lg" : "text-sm"}`}>2</div>
+              <CardContent className={`p-6 text-center ${isTvMode ? "p-8" : ""} h-full flex flex-col justify-center`}>
+                {(allSalesZero || vendedoresComVendas < 2) ? (
+                  <div className="animate-pulse">
+                    <div className="flex justify-center mb-6">
+                      <Medal className={`${isTvMode ? "h-16 w-16" : "h-12 w-12"} text-gray-300`} />
+                    </div>
+                    <h3 className={`font-bold text-white ${isTvMode ? "text-2xl" : "text-xl"}`}>🥈 Aguardando o Vice</h3>
+                    <p className={`text-gray-400 mt-2 ${isTvMode ? "text-lg" : "text-base"}`}>2º Lugar</p>
                   </div>
-                  <h3 className={`font-bold text-white mb-2 ${isTvMode ? "text-xl" : "text-lg"}`}>{topThree[1].nome}</h3>
-                </div>
-                <div>
-                  <div className={`${getPodiumColors(2).text} font-bold mb-2 ${isTvMode ? "text-xl" : "text-lg"}`}>{formatCurrency(topThree[1].vendas)}</div>
-                  <Badge className={`${getStatusColor(topThree[1].status)} ${isTvMode ? "text-sm" : "text-xs"}`}>{topThree[1].percentual}% da meta</Badge>
-                </div>
+                ) : (
+                  <>
+                    <div>
+                      <div className="flex justify-center mb-4">{getPodiumIcon(2)}</div>
+                      <div className="relative mb-4">
+                        <img src={topThree[1].foto || "/placeholder.svg?height=100&width=100"} alt={topThree[1].nome} className={`mx-auto rounded-full border-4 ${getPodiumColors(2).border} ${isTvMode ? "w-24 h-24" : "w-20 h-20"}`} />
+                        <div className={`absolute -top-2 -right-2 w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center font-bold text-gray-800 ${isTvMode ? "w-10 h-10 text-lg" : "text-sm"}`}>2</div>
+                      </div>
+                      <h3 className={`font-bold text-white mb-2 ${isTvMode ? "text-xl" : "text-lg"}`}>{topThree[1].nome}</h3>
+                    </div>
+                    <div>
+                      <div className={`${getPodiumColors(2).text} font-bold mb-2 ${isTvMode ? "text-xl" : "text-lg"}`}>{formatCurrency(topThree[1].vendas)}</div>
+                      <Badge className={`${getStatusColor(topThree[1].status)} ${isTvMode ? "text-sm" : "text-xs"}`}>{topThree[1].percentual}% da meta</Badge>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           </div>
         )}
+
+        {/* 1º Lugar */}
         {topThree[0] && (
           <div className="order-2 md:order-2">
             <Card className={`!bg-transparent ${getPodiumColors(1).bg} ${getPodiumColors(1).border} border-4 shadow-2xl ${getPodiumColors(1).glow} hover:scale-105 transition-all duration-300 ${getAdaptivePodiumHeight(others.length, 1, isTvMode)} min-h-[370px] flex flex-col justify-between`}>
-              <CardContent className={`p-6 text-center ${isTvMode ? "p-10" : ""} h-full flex flex-col justify-between`}>
-                <div>
-                  <div className="flex justify-center mb-4">{getPodiumIcon(1)}</div>
-                  <div className="relative mb-4">
-                    <img src={topThree[0].foto || "/placeholder.svg?height=120&width=120"} alt={topThree[0].nome} className={`mx-auto rounded-full border-4 ${getPodiumColors(1).border} ${isTvMode ? "w-32 h-32" : "w-24 h-24"}`} />
-                    <div className={`absolute -top-2 -right-2 w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center font-bold text-gray-900 ${isTvMode ? "w-12 h-12 text-xl" : "text-lg"}`}>1</div>
+              <CardContent className={`p-6 text-center ${isTvMode ? "p-10" : ""} h-full flex flex-col justify-center`}>
+                {allSalesZero ? (
+                  <div className="animate-pulse">
+                    <div className="flex justify-center mb-6">
+                      <Crown className={`${isTvMode ? "h-20 w-20" : "h-16 w-16"} text-yellow-400`} />
+                    </div>
+                    <h3 className={`font-bold text-white ${isTvMode ? "text-3xl" : "text-2xl"}`}>🏆 Aguardando o Campeão</h3>
+                    <p className={`text-gray-400 mt-2 ${isTvMode ? "text-xl" : "text-lg"}`}>1º Lugar</p>
+                    <div className={`mt-4 text-yellow-400 font-semibold ${isTvMode ? "text-lg" : "text-base"}`}>🌟 FUTURO CAMPEÃO DO MÊS 🌟</div>
                   </div>
-                  <h3 className={`font-bold text-white mb-2 ${isTvMode ? "text-2xl" : "text-xl"}`}>👑 {topThree[0].nome}</h3>
-                </div>
-                <div>
-                  <div className={`${getPodiumColors(1).text} font-bold mb-2 ${isTvMode ? "text-2xl" : "text-xl"}`}>{formatCurrency(topThree[0].vendas)}</div>
-                  <Badge className={`${getStatusColor(topThree[0].status)} ${isTvMode ? "text-base px-4 py-2" : "text-sm"}`}>🏆 {topThree[0].percentual}% da meta</Badge>
-                </div>
-                <div className={`mt-2 text-yellow-400 font-semibold w-full text-center ${isTvMode ? "text-lg" : "text-sm"}`}>🌟 CAMPEÃO DO MÊS 🌟</div>
+                ) : (
+                  <>
+                    <div>
+                      <div className="flex justify-center mb-4">{getPodiumIcon(1)}</div>
+                      <div className="relative mb-4">
+                        <img src={topThree[0].foto || "/placeholder.svg?height=120&width=120"} alt={topThree[0].nome} className={`mx-auto rounded-full border-4 ${getPodiumColors(1).border} ${isTvMode ? "w-32 h-32" : "w-24 h-24"}`} />
+                        <div className={`absolute -top-2 -right-2 w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center font-bold text-gray-900 ${isTvMode ? "w-12 h-12 text-xl" : "text-lg"}`}>1</div>
+                      </div>
+                      <h3 className={`font-bold text-white mb-2 ${isTvMode ? "text-2xl" : "text-xl"}`}>👑 {topThree[0].nome}</h3>
+                    </div>
+                    <div>
+                      <div className={`${getPodiumColors(1).text} font-bold mb-2 ${isTvMode ? "text-2xl" : "text-xl"}`}>{formatCurrency(topThree[0].vendas)}</div>
+                      <Badge className={`${getStatusColor(topThree[0].status)} ${isTvMode ? "text-base px-4 py-2" : "text-sm"}`}>🏆 {topThree[0].percentual}% da meta</Badge>
+                    </div>
+                    <div className={`mt-2 text-yellow-400 font-semibold w-full text-center ${isTvMode ? "text-lg" : "text-sm"}`}>🌟 CAMPEÃO DO MÊS 🌟</div>
+                  </>
+                )}
               </CardContent>
             </Card>
           </div>
         )}
+
+        {/* 3º Lugar */}
         {topThree[2] && (
           <div className="order-3 md:order-3">
             <Card className={`!bg-transparent ${getPodiumColors(3).bg} ${getPodiumColors(3).border} border-2 shadow-2xl ${getPodiumColors(3).glow} hover:scale-105 transition-all duration-300 ${getAdaptivePodiumHeight(others.length, 3, isTvMode)}`}>
-              <CardContent className={`p-6 text-center ${isTvMode ? "p-8" : ""} h-full flex flex-col justify-between`}>
-                <div>
-                  <div className="flex justify-center mb-4">{getPodiumIcon(3)}</div>
-                  <div className="relative mb-4">
-                    <img src={topThree[2].foto || "/placeholder.svg?height=100&width=100"} alt={topThree[2].nome} className={`mx-auto rounded-full border-4 ${getPodiumColors(3).border} ${isTvMode ? "w-24 h-24" : "w-20 h-20"}`} />
-                    <div className={`absolute -top-2 -right-2 w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center font-bold text-white ${isTvMode ? "w-10 h-10 text-lg" : "text-sm"}`}>3</div>
+              <CardContent className={`p-6 text-center ${isTvMode ? "p-8" : ""} h-full flex flex-col justify-center`}>
+                {(allSalesZero || vendedoresComVendas < 3) ? (
+                  <div className="animate-pulse">
+                    <div className="flex justify-center mb-6">
+                      <Award className={`${isTvMode ? "h-16 w-16" : "h-12 w-12"} text-amber-600`} />
+                    </div>
+                    <h3 className={`font-bold text-white ${isTvMode ? "text-2xl" : "text-xl"}`}>🥉 Aguardando o 3º Lugar</h3>
+                    <p className={`text-gray-400 mt-2 ${isTvMode ? "text-lg" : "text-base"}`}>3º Lugar</p>
                   </div>
-                  <h3 className={`font-bold text-white mb-2 ${isTvMode ? "text-xl" : "text-lg"}`}>{topThree[2].nome}</h3>
-                </div>
-                <div>
-                  <div className={`${getPodiumColors(3).text} font-bold mb-2 ${isTvMode ? "text-xl" : "text-lg"}`}>{formatCurrency(topThree[2].vendas)}</div>
-                  <Badge className={`${getStatusColor(topThree[2].status)} ${isTvMode ? "text-sm" : "text-xs"}`}>{topThree[2].percentual}% da meta</Badge>
-                </div>
+                ) : (
+                  <>
+                    <div>
+                      <div className="flex justify-center mb-4">{getPodiumIcon(3)}</div>
+                      <div className="relative mb-4">
+                        <img src={topThree[2].foto || "/placeholder.svg?height=100&width=100"} alt={topThree[2].nome} className={`mx-auto rounded-full border-4 ${getPodiumColors(3).border} ${isTvMode ? "w-24 h-24" : "w-20 h-20"}`} />
+                        <div className={`absolute -top-2 -right-2 w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center font-bold text-white ${isTvMode ? "w-10 h-10 text-lg" : "text-sm"}`}>3</div>
+                      </div>
+                      <h3 className={`font-bold text-white mb-2 ${isTvMode ? "text-xl" : "text-lg"}`}>{topThree[2].nome}</h3>
+                    </div>
+                    <div>
+                      <div className={`${getPodiumColors(3).text} font-bold mb-2 ${isTvMode ? "text-xl" : "text-lg"}`}>{formatCurrency(topThree[2].vendas)}</div>
+                      <Badge className={`${getStatusColor(topThree[2].status)} ${isTvMode ? "text-sm" : "text-xs"}`}>{topThree[2].percentual}% da meta</Badge>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           </div>
